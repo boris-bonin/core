@@ -85,18 +85,8 @@ export class Router {
         const order = details[0].order as Sdk.Rarible.Order;
         const exchange = new Sdk.Rarible.Exchange(this.chainId);
         return exchange.fillOrderTx(taker, order, {
-          amount: Number(details[0].amount),
-        });
-      }
-    }
-
-    if (details.some(({ kind }) => kind === "rarible")) {
-      if (details.length > 1) {
-        throw new Error("Rarible sweeping is not supported");
-      } else {
-        const order = details[0].order as Sdk.Rarible.Order;
-        const exchange = new Sdk.Rarible.Exchange(this.chainId);
-        return exchange.fillOrderTx(taker, order, {
+          tokenId: details[0].tokenId,
+          assetClass: details[0].contractKind.toUpperCase(),
           amount: Number(details[0].amount),
         });
       }
@@ -396,6 +386,8 @@ export class Router {
       const order = detail.order as Sdk.Rarible.Order;
       const exchange = new Sdk.Rarible.Exchange(this.chainId);
       return exchange.fillOrderTx(taker, order, {
+        tokenId: detail.tokenId,
+        assetClass: detail.contractKind.toUpperCase(),
         amount: Number(detail.extraArgs.amount),
       });
     }
@@ -478,7 +470,7 @@ export class Router {
   }
 
   private async generateNativeListingFillTx(
-    { kind, order, tokenId, amount }: ListingDetails,
+    { kind, order, tokenId, amount, contractKind }: ListingDetails,
     taker: string,
     options?: {
       referrer?: string;
@@ -587,6 +579,8 @@ export class Router {
       const exchange = new Sdk.Rarible.Exchange(this.chainId);
       return {
         tx: await exchange.fillOrderTx(taker, order, {
+          assetClass: contractKind,
+          tokenId,
           amount: Number(amount) ?? 1,
         }),
         exchangeKind: ExchangeKind.RARIBLE,
